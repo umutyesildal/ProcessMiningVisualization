@@ -1,7 +1,7 @@
 import pm4py
 import pandas as pd
 
-def load_and_process_log(path='BPI Challenge 2017.xes'):
+def load_and_process_log(path):
     # Load XES log
     log = pm4py.read_xes(path)
     
@@ -16,5 +16,12 @@ def load_and_process_log(path='BPI Challenge 2017.xes'):
     return df
 
 if __name__ == "__main__":
-    df = load_and_process_log()
-    df.to_csv('processed_bpi2017.csv', index=False)
+    for xes_file, out_csv in [
+        ("BPI_Challenge_2012.xes", "processed_bpi2012.csv"),
+        ("Road_Traffic_Fine_Management_Process.xes", "processed_trafficfines.csv"),
+        ("Sepsis Cases - Event Log.xes", "processed_sepsis.csv")
+    ]:
+        print(f"Processing {xes_file}...")
+        df = load_and_process_log(xes_file)
+        df.to_csv(out_csv, index=False)
+        print(f"Saved {out_csv}")

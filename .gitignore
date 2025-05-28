@@ -40,5 +40,6 @@ venv.bak/
 .DS_Store
 
 # Data
-processed_bpi2017.csv
+*.csv
 *.xes
+*.txt
