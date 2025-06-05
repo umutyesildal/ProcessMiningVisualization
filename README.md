@@ -1,57 +1,53 @@
-# ProcessMiningVisualization
+# Process Mining Violin Plot Visualization
 
-A Python Dash web application for interactive visualization of event log data (e.g., BPI Challenge 2017) using violin plots.
+A simple Dash web application for visualizing event log temporal patterns using violin plots.
+
+## Overview
+
+This project creates interactive violin plot visualizations for process mining event logs, specifically focused on the **Road Traffic Fines Management Process** dataset.
 
 ## Features
-- Load and preprocess XES event log files (with PM4Py)
-- Visualize event type distributions over time with violin plots (Plotly)
-- Interactive sorting by statistical parameters (min, max, mean, median, quartiles)
-- Log transformation for better visualization of skewed data
-- Loader spinner for user feedback
 
-## Quickstart
+- **Simple violin plots** showing event duration distributions
+- **Log-transformed time data** for better visualization
+- **Top event types** filtering for clean charts
+- **Interactive web interface** using Dash/Plotly
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/umutyesildal/ProcessMiningVisualization.git
-   cd ProcessMiningVisualization
-   ```
-2. **Create and activate a virtual environment:**
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate
-   ```
-3. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   # or manually:
-   pip install pandas numpy plotly dash pm4py
-   ```
-4. **Add your XES file** (e.g., `BPI Challenge 2017.xes`) to the project directory.
-5. **Preprocess the data:**
-   ```bash
-   python data_processing.py
-   ```
-6. **Run the Dash app:**
-   ```bash
-   python app.py
-   ```
-7. **Open your browser:**
-   Go to [http://127.0.0.1:8050](http://127.0.0.1:8050)
+## Quick Start
 
-## File Structure
-```
-ProcessMiningVisualization/
-├── app.py                # Dash web app
-├── data_processing.py    # Data preprocessing script
-├── .gitignore
-├── README.md
-└── ...
+1. **Activate virtual environment:**
+```bash
+source venv/bin/activate
 ```
 
-## Notes
-- The `.gitignore` excludes large data files and virtual environments.
-- For large datasets, log transformation and outlier handling are recommended for meaningful violin plots.
+2. **Run the app:**
+```bash
+python app.py
+```
 
-## License
-This project is for academic/research use. See repository for details.
+3. **Open in browser:**
+```
+http://127.0.0.1:8050
+```
+
+## Files
+
+- `app.py` - Main Dash application
+- `data_processing.py` - XES to CSV conversion
+- `processed_trafficfines.csv` - Processed traffic fines data
+- `Road_Traffic_Fine_Management_Process.xes` - Original XES log
+
+## Data Processing
+
+The app uses pre-processed traffic fines data with:
+- **Time since case start** calculated in hours
+- **Log transformation** applied for better distribution visibility
+- **Top 4 event types** selected for clean visualization
+
+## Dependencies
+
+- pandas
+- plotly
+- dash
+- pm4py
+- numpy

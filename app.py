@@ -2,157 +2,134 @@ import pandas as pd
 import plotly.express as px
 import dash
 from dash import dcc, html, Input, Output
-import logging
 import numpy as np
-import dash_bootstrap_components as dbc
 
-logging.basicConfig(level=logging.INFO)
+# Load processed traffic fines data
+df = pd.read_csv('data/processed_trafficfines.csv')
 
-# Load processed Road Traffic Fines event log
-df = pd.read_csv('processed_trafficfines.csv')
-logging.info(f"Loaded processed_trafficfines.csv with shape: {df.shape}")
+# Get top 4 event types
+top_events = df['concept:name'].value_counts().head(4).index.tolist()
+df_filtered = df[df['concept:name'].isin(top_events)]
 
-# Log transformation for time since case start (optional, can comment out)
-df['log_time'] = np.log1p(df['time_since_case_start'])
-logging.info(f"Log transformation applied. log_time min: {df['log_time'].min()}, max: {df['log_time'].max()}")
-
-# --- Load quantile-clipped and inter-event time processed data ---
-df_quantile = pd.read_csv('trafficfines_filtered_quantile.csv')
-df_interevent = pd.read_csv('trafficfines_interevent_quantile.csv')
-
+# Create Dash app
 app = dash.Dash(__name__)
-app.title = "Traffic Fines Event Type Distribution Visualization"
-
-sorting_options = ['min', 'max', 'mean', 'median', 'Q1', 'Q3']
-
-def compute_stats(df, x_col):
-    logging.info("Computing stats for sorting...")
-    stats = df.groupby('concept:name')[x_col].agg(['min', 'max', 'mean', 'median'])
-    stats['Q1'] = df.groupby('concept:name')[x_col].quantile(0.25)
-    stats['Q3'] = df.groupby('concept:name')[x_col].quantile(0.75)
-    stats.reset_index(inplace=True)
-    logging.info(f"Stats computed. Shape: {stats.shape}")
-    return stats
-
-stats = compute_stats(df, 'time_since_case_start')
-
-# Sidebar layout
-sidebar = html.Div([
-    html.H2("Filters", className="display-6"),
-    html.Hr(),
-    html.Label("Event Type:"),
-    dcc.Dropdown(
-        id='event-type-dropdown',
-        options=[{'label': e, 'value': e} for e in sorted(df_quantile['concept:name'].unique())],
-        value=None,
-        multi=True,
-        placeholder="All event types"
-    ),
-    html.Br(),
-    html.Label("Outcome (if available):"),
-    dcc.Dropdown(
-        id='outcome-dropdown',
-        options=[{'label': o, 'value': o} for o in sorted(df_quantile['lifecycle:transition'].unique())] if 'lifecycle:transition' in df_quantile.columns else [],
-        value=None,
-        multi=True,
-        placeholder="All outcomes"
-    ),
-    html.Br(),
-    html.Label("Sort Event Types by:"),
-    dcc.Dropdown(
-        id='sort-dropdown',
-        options=[{'label': opt.capitalize(), 'value': opt} for opt in sorting_options],
-        value='median',
-        clearable=False
-    ),
-], style={
-    'position': 'fixed',
-    'top': 0,
-    'left': 0,
-    'bottom': 0,
-    'width': '300px',
-    'padding': '30px 10px',
-    'background-color': '#f8f9fa',
-    'overflowY': 'auto',
-    'zIndex': 1000
-})
-
-# Main content with tabs
-content = html.Div([
-    dcc.Tabs(id='tabs', value='tab-quantile', children=[
-        dcc.Tab(label='Time Since Case Start', value='tab-quantile'),
-        dcc.Tab(label='Inter-Event Time', value='tab-interevent'),
-        # Add more tabs for other analyses
-    ]),
-    html.Div(id='tab-content', style={'margin-left': '320px', 'padding': '20px'})
-])
 
 app.layout = html.Div([
-    sidebar,
-    content
-])
+    html.H1("Traffic Fines Process Mining Visualization", style={'textAlign': 'center', 'marginBottom': '30px'}),
+    
+    # Control panel with dropdowns
+    html.Div([
+        # Time transformation dropdown
+        html.Div([
+            html.Label("Select Time Transformation:", style={'fontWeight': 'bold', 'marginBottom': '10px'}),
+            dcc.Dropdown(
+                id='time-transformation-dropdown',
+                options=[
+                    {'label': 'Raw Time (Hours)', 'value': 'raw'},
+                    {'label': 'Log Time (Log(Hours + 1))', 'value': 'log'},
+                    {'label': 'Square Root Time (sqrt(Hours))', 'value': 'sqrt'}
+                ],
+                value='log',  # Default to log transformation
+                style={'width': '350px'}
+            )
+        ], style={'display': 'inline-block', 'marginRight': '40px', 'verticalAlign': 'top'}),
+        
+        # Sorting dropdown
+        html.Div([
+            html.Label("Sort Event Types By:", style={'fontWeight': 'bold', 'marginBottom': '10px'}),
+            dcc.Dropdown(
+                id='sorting-dropdown',
+                options=[
+                    {'label': 'Frequency (Most Common First)', 'value': 'frequency'},
+                    {'label': 'Mean Time', 'value': 'mean'},
+                    {'label': 'Median Time', 'value': 'median'},
+                    {'label': 'Minimum Time', 'value': 'min'},
+                    {'label': 'Maximum Time', 'value': 'max'},
+                    {'label': '25th Percentile (Q1)', 'value': 'q1'},
+                    {'label': '75th Percentile (Q3)', 'value': 'q3'}
+                ],
+                value='frequency',  # Default to frequency sorting
+                style={'width': '350px'}
+            )
+        ], style={'display': 'inline-block', 'verticalAlign': 'top'})
+        
+    ], style={'margin': '20px auto', 'textAlign': 'center'}),
+    
+    # Graph placeholder
+    dcc.Graph(id='violin-plot')
+], style={'padding': '20px'})
 
+# Callback to update the violin plot based on selected transformation and sorting
 @app.callback(
-    Output('tab-content', 'children'),
-    [Input('tabs', 'value'),
-     Input('sort-dropdown', 'value'),
-     Input('event-type-dropdown', 'value'),
-     Input('outcome-dropdown', 'value')]
+    Output('violin-plot', 'figure'),
+    [Input('time-transformation-dropdown', 'value'),
+     Input('sorting-dropdown', 'value')]
 )
-def render_tab(tab, sort_by, event_types, outcomes):
-    if tab == 'tab-quantile':
-        df_plot = df_quantile.copy()
-        x_col = 'log_time'
-        x_title = "Log(Time Since Case Start + 1) [Seconds]"
-    elif tab == 'tab-interevent':
-        df_plot = df_interevent.copy()
-        x_col = 'log_inter_event_time'
-        x_title = "Log(Inter-Event Time + 1) [Seconds]"
+def update_violin_plot(transformation, sorting):
+    # Apply the selected transformation
+    if transformation == 'raw':
+        df_filtered['transformed_time'] = df_filtered['time_since_case_start']
+        x_title = "Time Since Case Start (Hours)"
+        plot_title = "Traffic Fines: Event Time Distribution (Raw Time)"
+    elif transformation == 'log':
+        df_filtered['transformed_time'] = np.log1p(df_filtered['time_since_case_start'])
+        x_title = "Log(Time Since Case Start + 1)"
+        plot_title = "Traffic Fines: Event Time Distribution (Log Time)"
+    elif transformation == 'sqrt':
+        df_filtered['transformed_time'] = np.sqrt(df_filtered['time_since_case_start'])
+        x_title = "sqrt(Time Since Case Start) (sqrt(Hours))"
+        plot_title = "Traffic Fines: Event Time Distribution (Square Root Time)"
+    
+    # Calculate statistics for sorting
+    if sorting == 'frequency':
+        # Sort by frequency (most common first)
+        event_order = df_filtered['concept:name'].value_counts().index.tolist()
     else:
-        return html.Div("Tab not implemented.")
-    # Filter by event type
-    if event_types:
-        df_plot = df_plot[df_plot['concept:name'].isin(event_types)]
-    # Filter by outcome if available
-    if outcomes and 'lifecycle:transition' in df_plot.columns:
-        df_plot = df_plot[df_plot['lifecycle:transition'].isin(outcomes)]
-    # Map log column to raw column name
-    x_raw_col_map = {
-        'log_time': 'time_since_case_start',
-        'log_inter_event_time': 'inter_event_time'
-    }
-    raw_col = x_raw_col_map.get(x_col, x_col)
-    # Compute stats for sorting
-    stats = df_plot.groupby('concept:name')[raw_col].agg(['min', 'max', 'mean', 'median'])
-    stats['Q1'] = df_plot.groupby('concept:name')[raw_col].quantile(0.25)
-    stats['Q3'] = df_plot.groupby('concept:name')[raw_col].quantile(0.75)
-    stats.reset_index(inplace=True)
-    sorted_events = stats.sort_values(by=sort_by)['concept:name']
-    df_small = df_plot[df_plot['concept:name'].isin(sorted_events)]
+        # Calculate statistics for each event type
+        stats_df = df_filtered.groupby('concept:name')['transformed_time'].agg([
+            'mean', 'median', 'min', 'max',
+            lambda x: x.quantile(0.25),  # Q1
+            lambda x: x.quantile(0.75)   # Q3
+        ]).reset_index()
+        
+        stats_df.columns = ['concept:name', 'mean', 'median', 'min', 'max', 'q1', 'q3']
+        
+        # Sort based on selected metric
+        if sorting == 'mean':
+            stats_df = stats_df.sort_values('mean', ascending=True)
+        elif sorting == 'median':
+            stats_df = stats_df.sort_values('median', ascending=True)
+        elif sorting == 'min':
+            stats_df = stats_df.sort_values('min', ascending=True)
+        elif sorting == 'max':
+            stats_df = stats_df.sort_values('max', ascending=True)
+        elif sorting == 'q1':
+            stats_df = stats_df.sort_values('q1', ascending=True)
+        elif sorting == 'q3':
+            stats_df = stats_df.sort_values('q3', ascending=True)
+        
+        event_order = stats_df['concept:name'].tolist()
+    
+    # Create violin plot with custom ordering
     fig = px.violin(
-        df_small,
+        df_filtered, 
+        x='transformed_time', 
         y='concept:name',
-        x=x_col,
-        category_orders={'concept:name': list(sorted_events)},
         orientation='h',
         box=True,
-        points='all',
-        width=1200,
-        height=800,
-        color=None
+        title=plot_title,
+        category_orders={'concept:name': event_order}
     )
-    fig.update_traces(meanline_visible=True, spanmode='hard', scalemode='width', side='both', jitter=0.3, pointpos=0)
+    
     fig.update_layout(
         xaxis_title=x_title,
         yaxis_title="Event Type",
-        margin=dict(l=200, r=50, t=50, b=50),
-        autosize=True,
-        height=800,
-        width=1200,
-        plot_bgcolor='white',
-        paper_bgcolor='white',
+        height=500,
+        width=1000,
+        margin={'t': 80, 'l': 250, 'r': 50, 'b': 80}
     )
-    return dcc.Graph(figure=fig, style={'height': '90vh', 'width': '100vw'})
+    
+    return fig
 
 if __name__ == '__main__':
     app.run(debug=True)
