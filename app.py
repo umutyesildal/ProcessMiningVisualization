@@ -51,15 +51,161 @@ app.index_string = '''
                 box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1) !important;
             }
             
-            /* Responsive design */
+            /* Tablet responsive design */
+            @media (min-width: 769px) and (max-width: 1024px) {
+                .sidebar {
+                    width: 240px !important;
+                }
+                
+                .main-chart {
+                    margin-left: 260px !important;
+                }
+                
+                .header-title {
+                    font-size: 1.8rem !important;
+                }
+            }
+
+            /* Mobile responsive design */
             @media (max-width: 768px) {
-                .dropdown-container {
+                body {
+                    font-size: 14px !important;
+                }
+                
+                .sidebar {
+                    position: relative !important;
+                    width: 100% !important;
+                    height: auto !important;
+                    padding: 0 15px !important;
+                    margin-bottom: 20px !important;
+                    overflow-y: visible !important;
+                }
+                
+                .main-chart {
+                    margin-left: 0 !important;
+                    margin-right: 0 !important;
+                    padding: 10px !important;
+                }
+                
+                .main-content {
                     flex-direction: column !important;
                 }
                 
-                .dropdown-item {
-                    margin-bottom: 20px !important;
-                    margin-right: 0 !important;
+                .header-title {
+                    font-size: 1.5rem !important;
+                    padding: 15px 10px 5px 10px !important;
+                }
+                
+                .header-subtitle {
+                    font-size: 0.9rem !important;
+                    padding: 0 10px 15px 10px !important;
+                }
+                
+                .control-card {
+                    margin-bottom: 15px !important;
+                    padding: 15px !important;
+                    border-radius: 10px !important;
+                }
+                
+                .info-panel {
+                    display: none !important;
+                }
+                
+                .toggle-buttons {
+                    flex-direction: column !important;
+                    gap: 10px !important;
+                }
+                
+                .toggle-button {
+                    width: 100% !important;
+                    border-radius: 8px !important;
+                    margin-bottom: 0 !important;
+                    padding: 12px 16px !important;
+                    font-size: 0.9rem !important;
+                }
+                
+                .chart-container {
+                    height: 400px !important;
+                    margin: 0 !important;
+                }
+                
+                /* Optimize dropdown for mobile */
+                .Select-control {
+                    border-radius: 8px !important;
+                    padding: 2px !important;
+                    font-size: 0.9rem !important;
+                }
+                
+                .Select-menu-outer {
+                    font-size: 0.9rem !important;
+                }
+            }
+            
+            /* Small mobile devices */
+            @media (max-width: 480px) {
+                .header-title {
+                    font-size: 1.3rem !important;
+                    padding: 10px 5px 5px 5px !important;
+                }
+                
+                .header-subtitle {
+                    font-size: 0.8rem !important;
+                    padding: 0 5px 10px 5px !important;
+                    margin-bottom: 0 !important;
+                }
+                
+                .sidebar {
+                    padding: 0 10px !important;
+                }
+                
+                .main-chart {
+                    padding: 5px !important;
+                }
+                
+                .control-card {
+                    padding: 12px !important;
+                    margin-bottom: 10px !important;
+                }
+                
+                .toggle-button {
+                    padding: 10px 12px !important;
+                    font-size: 0.8rem !important;
+                }
+                
+                .chart-container {
+                    height: 350px !important;
+                }
+                
+                /* Better touch targets for mobile */
+                .Select-control {
+                    min-height: 44px !important;
+                    font-size: 0.85rem !important;
+                }
+                
+                .Select-arrow-zone {
+                    width: 30px !important;
+                }
+            }
+            
+            /* Landscape mobile optimization */
+            @media (max-width: 768px) and (orientation: landscape) {
+                .chart-container {
+                    height: 300px !important;
+                }
+                
+                .control-card {
+                    padding: 10px !important;
+                }
+                
+                .toggle-buttons {
+                    flex-direction: row !important;
+                    gap: 5px !important;
+                }
+                
+                .toggle-button {
+                    width: 50% !important;
+                    padding: 8px 12px !important;
+                    font-size: 0.8rem !important;
                 }
             }
         </style>
@@ -92,6 +238,7 @@ app.layout = html.Div([
     html.Div([
         html.H1(
             "🚗 Traffic Fines Process Mining Dashboard", 
+            className="header-title",
             style={
                 'textAlign': 'center', 
                 'color': COLORS['primary'],
@@ -103,6 +250,7 @@ app.layout = html.Div([
         ),
         html.P(
             "Interactive violin plots of event time distributions",
+            className="header-subtitle",
             style={
                 'textAlign': 'center',
                 'color': COLORS['text_light'],
@@ -144,6 +292,7 @@ app.layout = html.Div([
                     html.Button(
                         [html.I(className="fas fa-chart-line", style={'marginRight': '8px'}), "Log Time"],
                         id='log-button',
+                        className="toggle-button",
                         n_clicks=0,
                         style={
                             'background': COLORS['secondary'],
@@ -163,6 +312,7 @@ app.layout = html.Div([
                     html.Button(
                         [html.I(className="fas fa-clock", style={'marginRight': '8px'}), "Raw Time"],
                         id='raw-button',
+                        className="toggle-button",
                         n_clicks=0,
                         style={
                             'background': '#ecf0f1',
@@ -178,8 +328,8 @@ app.layout = html.Div([
                             'width': '50%'
                         }
                     )
-                ], style={'display': 'flex', 'width': '100%'})
-            ], style={
+                ], className="toggle-buttons", style={'display': 'flex', 'width': '100%'})
+            ], className="control-card", style={
                 'background': COLORS['card'],
                 'padding': '20px',
                 'borderRadius': '12px',
@@ -220,7 +370,7 @@ app.layout = html.Div([
                         'fontSize': '0.85rem'
                     }
                 )
-            ], style={
+            ], className="control-card", style={
                 'background': COLORS['card'],
                 'padding': '20px',
                 'borderRadius': '12px',
@@ -250,7 +400,7 @@ app.layout = html.Div([
                     html.P("🎻 Horizontal Violin Plots", style={'margin': '5px 0', 'fontSize': '0.8rem', 'color': COLORS['text']}),
                     html.P("📦 Box plots included", style={'margin': '5px 0', 'fontSize': '0.8rem', 'color': COLORS['text']})
                 ])
-            ], style={
+            ], className="info-panel", style={
                 'background': f'linear-gradient(135deg, #e8f4fd 0%, #f8f9fa 100%)',
                 'padding': '20px',
                 'borderRadius': '12px',
@@ -258,7 +408,7 @@ app.layout = html.Div([
                 'marginBottom': '20px'
             })
             
-        ], style={
+        ], className="sidebar", style={
             'width': '280px',
             'padding': '0 20px 0 20px',
             'position': 'fixed',
@@ -266,27 +416,28 @@ app.layout = html.Div([
             'overflowY': 'auto'
         }),
         
-        # Main chart area - centered
+        # Main chart area - stretched to the right
         html.Div([
             dcc.Graph(
                 id='violin-plot',
+                className="chart-container",
                 style={
                     'height': 'calc(100vh - 180px)',
                     'background': COLORS['card'],
                     'borderRadius': '15px'
                 }
             )
-        ], style={
+        ], className="main-chart", style={
             'background': COLORS['card'],
             'marginLeft': '320px',
-            'marginRight': '20px',
+            'marginRight': '10px',
             'padding': '20px',
             'borderRadius': '15px',
             'boxShadow': '0 4px 25px rgba(0,0,0,0.1)',
             'border': f'1px solid {COLORS["border"]}'
         })
         
-    ], style={'display': 'flex', 'minHeight': 'calc(100vh - 100px)'}),
+    ], className="main-content", style={'minHeight': 'calc(100vh - 100px)'}),
     
     # Hidden store for time transformation state
     dcc.Store(id='time-transformation-store', data='log')
@@ -432,7 +583,7 @@ def update_violin_plot(transformation, sorting):
         font={'family': 'Inter, Arial, sans-serif', 'color': COLORS['text']},
         plot_bgcolor='rgba(0,0,0,0)',
         paper_bgcolor='rgba(0,0,0,0)',
-        margin={'t': 60, 'l': 200, 'r': 30, 'b': 60},
+        margin={'t': 60, 'l': 200, 'r': 20, 'b': 60},
         xaxis={
             'gridcolor': '#f1f3f4',
             'linecolor': '#bdc3c7',
