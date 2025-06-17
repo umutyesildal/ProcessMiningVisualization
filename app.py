@@ -3,6 +3,7 @@ import plotly.express as px
 import dash
 from dash import dcc, html, Input, Output
 import numpy as np
+from transformations import transform_time_data, get_transformation_options
 
 # Load processed traffic fines data
 df = pd.read_csv('data/processed_trafficfines.csv')
@@ -287,48 +288,16 @@ app.layout = html.Div([
                     )
                 ], style={'display': 'flex', 'alignItems': 'center', 'marginBottom': '15px'}),
                 
-                # Toggle buttons for time transformation
-                html.Div([
-                    html.Button(
-                        [html.I(className="fas fa-chart-line", style={'marginRight': '8px'}), "Log Time"],
-                        id='log-button',
-                        className="toggle-button",
-                        n_clicks=0,
-                        style={
-                            'background': COLORS['secondary'],
-                            'color': 'white',
-                            'border': 'none',
-                            'padding': '12px 20px',
-                            'borderRadius': '8px 0 0 8px',
-                            'fontWeight': '600',
-                            'fontSize': '0.85rem',
-                            'fontFamily': 'Inter, sans-serif',
-                            'cursor': 'pointer',
-                            'transition': 'all 0.3s ease',
-                            'boxShadow': '0 2px 8px rgba(52, 152, 219, 0.3)',
-                            'width': '50%'
-                        }
-                    ),
-                    html.Button(
-                        [html.I(className="fas fa-clock", style={'marginRight': '8px'}), "Raw Time"],
-                        id='raw-button',
-                        className="toggle-button",
-                        n_clicks=0,
-                        style={
-                            'background': '#ecf0f1',
-                            'color': COLORS['text'],
-                            'border': 'none',
-                            'padding': '12px 20px',
-                            'borderRadius': '0 8px 8px 0',
-                            'fontWeight': '500',
-                            'fontSize': '0.85rem',
-                            'fontFamily': 'Inter, sans-serif',
-                            'cursor': 'pointer',
-                            'transition': 'all 0.3s ease',
-                            'width': '50%'
-                        }
-                    )
-                ], className="toggle-buttons", style={'display': 'flex', 'width': '100%'})
+                # Transformation method dropdown
+                dcc.Dropdown(
+                    id='transformation-dropdown',
+                    options=get_transformation_options(),
+                    value='log_hours',
+                    style={
+                        'fontFamily': 'Inter, sans-serif',
+                        'fontSize': '0.85rem'
+                    }
+                )
             ], className="control-card", style={
                 'background': COLORS['card'],
                 'padding': '20px',
@@ -437,10 +406,7 @@ app.layout = html.Div([
             'border': f'1px solid {COLORS["border"]}'
         })
         
-    ], className="main-content", style={'minHeight': 'calc(100vh - 100px)'}),
-    
-    # Hidden store for time transformation state
-    dcc.Store(id='time-transformation-store', data='log')
+    ], className="main-content", style={'minHeight': 'calc(100vh - 100px)'})
     
 ], style={
     'background': COLORS['background'],
@@ -448,86 +414,22 @@ app.layout = html.Div([
     'fontFamily': 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
 })
 
-# Callback to handle button styling and time transformation state
-@app.callback(
-    [Output('log-button', 'style'),
-     Output('raw-button', 'style'),
-     Output('time-transformation-store', 'data')],
-    [Input('log-button', 'n_clicks'),
-     Input('raw-button', 'n_clicks')],
-    prevent_initial_call=False
-)
-def update_button_styles(log_clicks, raw_clicks):
-    ctx = dash.callback_context
-    
-    # Default to log transformation
-    if not ctx.triggered:
-        active_transformation = 'log'
-    else:
-        button_id = ctx.triggered[0]['prop_id'].split('.')[0]
-        if button_id == 'log-button':
-            active_transformation = 'log'
-        else:
-            active_transformation = 'raw'
-    
-    # Active button style
-    active_style = {
-        'background': COLORS['secondary'],
-        'color': 'white',
-        'border': 'none',
-        'padding': '12px 20px',
-        'fontWeight': '600',
-        'fontSize': '0.85rem',
-        'fontFamily': 'Inter, sans-serif',
-        'cursor': 'pointer',
-        'transition': 'all 0.3s ease',
-        'boxShadow': '0 2px 8px rgba(52, 152, 219, 0.3)',
-        'width': '50%',
-        'transform': 'translateY(-1px)'
-    }
-    
-    # Inactive button style
-    inactive_style = {
-        'background': '#ecf0f1',
-        'color': COLORS['text'],
-        'border': 'none',
-        'padding': '12px 20px',
-        'fontWeight': '500',
-        'fontSize': '0.85rem',
-        'fontFamily': 'Inter, sans-serif',
-        'cursor': 'pointer',
-        'transition': 'all 0.3s ease',
-        'width': '50%'
-    }
-    
-    if active_transformation == 'log':
-        log_style = {**active_style, 'borderRadius': '8px 0 0 8px'}
-        raw_style = {**inactive_style, 'borderRadius': '0 8px 8px 0'}
-    else:
-        log_style = {**inactive_style, 'borderRadius': '8px 0 0 8px'}
-        raw_style = {**active_style, 'borderRadius': '0 8px 8px 0'}
-    
-    return log_style, raw_style, active_transformation
-
 # Callback to update the violin plot based on selected transformation and sorting
 @app.callback(
     Output('violin-plot', 'figure'),
-    [Input('time-transformation-store', 'data'),
+    [Input('transformation-dropdown', 'value'),
      Input('sorting-dropdown', 'value')]
 )
 def update_violin_plot(transformation, sorting):
     # Filter data to top 4 event types (create a proper copy)
     df_filtered = df[df['concept:name'].isin(top_events)].copy()
     
-    # Apply the selected transformation
-    if transformation == 'raw':
-        df_filtered.loc[:, 'transformed_time'] = df_filtered['time_since_case_start']
-        x_title = "Time Since Case Start (Hours)"
-        plot_title = "🕐 Event Time Distribution - Raw Time"
-    else:  # log transformation
-        df_filtered.loc[:, 'transformed_time'] = np.log1p(df_filtered['time_since_case_start'])
-        x_title = "Log(Time Since Case Start + 1)"
-        plot_title = "📊 Event Time Distribution - Log Time"
+    # Apply the selected transformation using the transformations module
+    transformed_data, x_title, plot_title = transform_time_data(
+        df_filtered['time_since_case_start'], 
+        transformation
+    )
+    df_filtered.loc[:, 'transformed_time'] = transformed_data
     
     # Calculate statistics for sorting
     if sorting == 'frequency':
