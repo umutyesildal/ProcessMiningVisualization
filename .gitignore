@@ -43,3 +43,4 @@ venv.bak/
 *.csv
 *.xes
 *.txt
+.Data

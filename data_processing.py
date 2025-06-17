@@ -17,9 +17,9 @@ def load_and_process_log(path):
 
 if __name__ == "__main__":
     for xes_file, out_csv in [
-        ("BPI_Challenge_2012.xes", "processed_bpi2012.csv"),
-        ("Road_Traffic_Fine_Management_Process.xes", "processed_trafficfines.csv"),
-        ("Sepsis Cases - Event Log.xes", "processed_sepsis.csv")
+        ("data/BPI_Challenge_2012.xes", "data/processed_bpi2012.csv"),
+        ("data/Road_Traffic_Fine_Management_Process.xes", "data/processed_trafficfines.csv"),
+        ("data/Sepsis Cases - Event Log.xes", "data/processed_sepsis.csv")
     ]:
         print(f"Processing {xes_file}...")
         df = load_and_process_log(xes_file)
