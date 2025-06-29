@@ -3,10 +3,16 @@ import plotly.express as px
 import dash
 from dash import dcc, html, Input, Output
 import numpy as np
+import os
+import sys
+
+# Add utils to path
+sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
 from transformations import transform_time_data, get_transformation_options
 
-# Load processed traffic fines data
-df = pd.read_csv('data/processed_trafficfines.csv')
+# Load processed traffic fines data (adjust path for new structure)
+data_path = os.path.join(os.path.dirname(__file__), '..', 'datasets', 'processed', 'processed_trafficfines.csv')
+df = pd.read_csv(data_path)
 
 # Filter out the first events (time_since_case_start = 0) as they don't provide meaningful temporal insights
 # These are case-start events like "Create Fine" that always occur at time 0

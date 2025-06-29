@@ -172,41 +172,87 @@ Virtual environment (recommended)
 ```
 
 ### ⚡ Installation & Setup
-```bash
-# 1. Clone/Download the project
-cd pmva_implementation
 
-# 2. Create virtual environment
+#### Option 1: One-Command Setup (Recommended)
+```bash
+# 1. Clone the repository
+git clone https://github.com/umutyesildal/ProcessMiningVisualization.git
+cd ProcessMiningVisualization
+
+# 2. Complete setup and launch (installs dependencies, processes data, launches dashboard)
+python setup_and_run.py
+```
+
+#### Option 2: Using Makefile
+```bash
+# Full setup and run
+make setup
+
+# Or step by step:
+make install    # Install dependencies
+make process    # Process XES files
+make run        # Launch dashboard (skip processing)
+```
+
+#### Option 3: Manual Step-by-Step
+```bash
+# 1. Create virtual environment
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# 3. Install dependencies
-pip install pandas plotly dash pm4py numpy scikit-learn
+# 2. Install dependencies
+pip install -r requirements.txt
 
-# 4. Run the dashboard
-python app.py
+# 3. Run complete setup
+python setup_and_run.py
+```
 
-# 5. Open in browser
-# → http://127.0.0.1:8050
+#### Advanced Usage
+```bash
+# Only process data (don't run dashboard)
+python setup_and_run.py --process-data
+
+# Skip data processing, just run dashboard
+python setup_and_run.py --skip-processing
+
+# Test installation
+make test
 ```
 
 ### 📁 Project Structure
 ```
 pmva_implementation/
-├── 🏠 app.py                           # Main dashboard application
-├── 🔄 transformations.py              # Time transformation methods
-├── 📊 data_processing.py              # XES to CSV conversion
-├── 📈 data/
-│   ├── processed_trafficfines.csv     # Traffic fines (active)
-│   ├── Road_Traffic_Fine_Management_Process.xes
-│   ├── BPI_Challenge_2012.xes
-│   ├── Sepsis Cases - Event Log.xes
-│   └── BPI Challenge 2017.xes
-├── 📚 archive/
-│   ├── processed_bpi2012.csv          # BPI 2012 processed
-│   ├── processed_sepsis.csv           # Sepsis processed
-│   └── *_event_log_stats.py          # Analysis scripts
-└── 📖 README.md                       # This file
+├── 📁 src/                              # Source code
+│   ├── app.py                           # Main dashboard application
+│   ├── __init__.py                      # Package initialization
+│   ├── utils/                           # Utility modules
+│   │   ├── __init__.py
+│   │   └── transformations.py          # Time transformation functions
+│   └── data_processing/                 # Data processing modules
+│       ├── __init__.py
+│       └── data_processing.py           # XES to CSV conversion
+├── � datasets/                         # Data storage
+│   ├── raw/                             # Original XES files
+│   │   ├── BPI_Challenge_2012.xes
+│   │   ├── Sepsis Cases - Event Log.xes
+│   │   └── Road_Traffic_Fine_Management_Process.xes
+│   └── processed/                       # Processed CSV files
+│       ├── processed_trafficfines.csv
+│       ├── processed_bpi2012.csv
+│       └── processed_sepsis.csv
+├── 📁 scripts/                          # Analysis and utility scripts
+│   ├── README.md
+│   └── analysis/                        # Data analysis scripts
+├── 📁 docs/                             # Documentation
+│   ├── papers/                          # Research papers
+│   ├── INSTALL.md                       # Installation guide
+│   └── DEVELOPER.md                     # Developer documentation
+├── 📁 venv/                             # Virtual environment (git ignored)
+├── 🐍 setup_and_run.py                 # Single entry point - setup & launch
+├── 📋 Makefile                         # Convenient command shortcuts
+├── 📦 requirements.txt                 # Python dependencies
+├── 🔧 .gitignore                       # Git ignore rules
+└── 📖 README.md                        # Main documentation
 ```
 
 ---
