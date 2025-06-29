@@ -10,7 +10,6 @@
 \usepackage{cite}
 \usepackage[margin=2.5cm]{geometry}
 \usepackage{float}
-\usepackage{subfigure}
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage{url}
@@ -38,10 +37,8 @@
 
 \author{
     Umut Yesildal \\
-    \textit{Humboldt-Universität zu Berlin} \\
-    \textit{Institut für Informatik} \\
-    \textit{Supervisor: Prof. Dr. Jan Mendling} \\
-    \textit{Task 10: Event type distribution over time axis} \\
+    Institut für Informatik, Humboldt-Universität zu Berlin \\
+    Supervisor: Prof. Dr. Jan Mendling \\
     \texttt{umut.yesildal@student.hu-berlin.de}
 }
 
@@ -50,10 +47,6 @@
 \begin{document}
 
 \maketitle
-
-\begin{abstract}
-Process mining event logs contain rich temporal information that reveals process behavior patterns. However, traditional visualization methods struggle to effectively display the temporal distributions of event types, particularly when dealing with highly skewed data typical in process mining datasets. This paper presents an interactive dashboard that utilizes violin charts to visualize event type distributions over time, enabling process analysts to understand temporal patterns through multiple statistical sorting parameters. The solution addresses the challenge of visualizing time-since-case-start distributions by implementing smart filtering techniques and providing seven different time transformation methods. The approach is validated across four diverse process mining datasets from healthcare, government, and finance domains, demonstrating cross-domain applicability and scalability from 15,000 to over 1.2 million events. The interactive dashboard supports real-time analysis with configurable sorting options including minimum, maximum, mean, median, and quartile-based arrangements, providing comprehensive insights into process temporal behavior.
-\end{abstract}
 
 \section{Introduction}
 \label{sec:introduction}
