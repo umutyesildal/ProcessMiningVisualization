@@ -8,8 +8,14 @@ from transformations import transform_time_data, get_transformation_options
 # Load processed traffic fines data
 df = pd.read_csv('data/processed_trafficfines.csv')
 
-# Get top 4 event types for filtering
-top_events = df['concept:name'].value_counts().head(4).index.tolist()
+# Filter out the first events (time_since_case_start = 0) as they don't provide meaningful temporal insights
+# These are case-start events like "Create Fine" that always occur at time 0
+# This filtering focuses the analysis on actual temporal patterns within processes
+df_filtered_time = df[df['time_since_case_start'] > 0].copy()
+
+# Get top 4 event types for filtering (from non-zero time events)
+# This gives us the most frequent temporal events, excluding case-start events
+top_events = df_filtered_time['concept:name'].value_counts().head(4).index.tolist()
 
 # Create Dash app
 app = dash.Dash(__name__, external_stylesheets=[
@@ -22,7 +28,7 @@ app.index_string = '''
 <html>
     <head>
         {%metas%}
-        <title>Traffic Fines Process Mining Dashboard</title>
+        <title>Process Mining Violin Plot Dashboard</title>
         {%favicon%}
         {%css%}
         <style>
@@ -238,7 +244,7 @@ app.layout = html.Div([
     # Header section - compact
     html.Div([
         html.H1(
-            "🚗 Traffic Fines Process Mining Dashboard", 
+            "🎻 Process Mining Violin Plot Dashboard", 
             className="header-title",
             style={
                 'textAlign': 'center', 
@@ -250,7 +256,7 @@ app.layout = html.Div([
             }
         ),
         html.P(
-            "Interactive violin plots of event time distributions",
+            "Interactive visualization of temporal event distributions across multiple BPI datasets",
             className="header-subtitle",
             style={
                 'textAlign': 'center',
@@ -364,10 +370,10 @@ app.layout = html.Div([
                     )
                 ], style={'display': 'flex', 'alignItems': 'center', 'marginBottom': '15px'}),
                 html.Div([
-                    html.P("📁 Road Traffic Fines", style={'margin': '5px 0', 'fontSize': '0.8rem', 'color': COLORS['text']}),
-                    html.P("📊 Top 4 Event Types", style={'margin': '5px 0', 'fontSize': '0.8rem', 'color': COLORS['text']}),
-                    html.P("🎻 Horizontal Violin Plots", style={'margin': '5px 0', 'fontSize': '0.8rem', 'color': COLORS['text']}),
-                    html.P("📦 Box plots included", style={'margin': '5px 0', 'fontSize': '0.8rem', 'color': COLORS['text']})
+                    html.P("� Traffic Fines Dataset (Active)", style={'margin': '5px 0', 'fontSize': '0.8rem', 'color': COLORS['text']}),
+                    html.P("🧹 Case-start events excluded", style={'margin': '5px 0', 'fontSize': '0.8rem', 'color': COLORS['text']}),
+                    html.P("📈 Top 4 Temporal Events", style={'margin': '5px 0', 'fontSize': '0.8rem', 'color': COLORS['text']}),
+                    html.P("🎻 Horizontal Violin + Box plots", style={'margin': '5px 0', 'fontSize': '0.8rem', 'color': COLORS['text']})
                 ])
             ], className="info-panel", style={
                 'background': f'linear-gradient(135deg, #e8f4fd 0%, #f8f9fa 100%)',
@@ -421,23 +427,23 @@ app.layout = html.Div([
      Input('sorting-dropdown', 'value')]
 )
 def update_violin_plot(transformation, sorting):
-    # Filter data to top 4 event types (create a proper copy)
-    df_filtered = df[df['concept:name'].isin(top_events)].copy()
+    # Use the pre-filtered data (no first events) and filter to top 4 event types
+    df_final = df_filtered_time[df_filtered_time['concept:name'].isin(top_events)].copy()
     
     # Apply the selected transformation using the transformations module
     transformed_data, x_title, plot_title = transform_time_data(
-        df_filtered['time_since_case_start'], 
+        df_final['time_since_case_start'], 
         transformation
     )
-    df_filtered.loc[:, 'transformed_time'] = transformed_data
+    df_final.loc[:, 'transformed_time'] = transformed_data
     
     # Calculate statistics for sorting
     if sorting == 'frequency':
         # Sort by frequency (most common first)
-        event_order = df_filtered['concept:name'].value_counts().index.tolist()
+        event_order = df_final['concept:name'].value_counts().index.tolist()
     else:
         # Calculate statistics for each event type
-        stats_df = df_filtered.groupby('concept:name')['transformed_time'].agg([
+        stats_df = df_final.groupby('concept:name')['transformed_time'].agg([
             'mean', 'median', 'min', 'max',
             lambda x: x.quantile(0.25),  # Q1
             lambda x: x.quantile(0.75)   # Q3
@@ -463,7 +469,7 @@ def update_violin_plot(transformation, sorting):
     
     # Create violin plot with custom ordering
     fig = px.violin(
-        df_filtered, 
+        df_final, 
         x='transformed_time', 
         y='concept:name',
         orientation='h',
