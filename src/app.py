@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import pandas as pd
 import plotly.express as px
 import dash
@@ -10,18 +11,64 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
 from transformations import transform_time_data, get_transformation_options
 
-# Load processed traffic fines data (adjust path for new structure)
-data_path = os.path.join(os.path.dirname(__file__), '..', 'datasets', 'processed', 'processed_trafficfines.csv')
-df = pd.read_csv(data_path)
+# Dataset Configuration
+DATASETS = {
+    'traffic_fines': {
+        'name': '🚗 Traffic Fines',
+        'file': 'processed_road_traffic_fine_management_process.csv',
+        'description': 'Road Traffic Fine Management Process',
+        'domain': 'Government',
+        'cases': '150,370',
+        'events': '561,470'
+    },
+    'bpi_2012': {
+        'name': '🏦 BPI Challenge 2012',
+        'file': 'processed_bpi_challenge_2012.csv',
+        'description': 'Loan Application Process',
+        'domain': 'Finance',
+        'cases': '13,087',
+        'events': '262,000'
+    },
+    'bpi_2017': {
+        'name': '🏦 BPI Challenge 2017',
+        'file': 'processed_bpi_challenge_2017.csv',
+        'description': 'Credit Application Process',
+        'domain': 'Finance',
+        'cases': '31,509',
+        'events': '1,202,267'
+    },
+    'sepsis': {
+        'name': '🏥 Sepsis Cases',
+        'file': 'processed_sepsis_cases___event_log.csv',
+        'description': 'Hospital Patient Treatment Process',
+        'domain': 'Healthcare',
+        'cases': '1,050',
+        'events': '15,214'
+    }
+}
 
-# Filter out the first events (time_since_case_start = 0) as they don't provide meaningful temporal insights
-# These are case-start events like "Create Fine" that always occur at time 0
-# This filtering focuses the analysis on actual temporal patterns within processes
-df_filtered_time = df[df['time_since_case_start'] > 0].copy()
-
-# Get top 4 event types for filtering (from non-zero time events)
-# This gives us the most frequent temporal events, excluding case-start events
-top_events = df_filtered_time['concept:name'].value_counts().head(4).index.tolist()
+def load_dataset(dataset_key, num_events=6):
+    """Load and process a dataset by key."""
+    if dataset_key not in DATASETS:
+        raise ValueError(f"Dataset {dataset_key} not found")
+    
+    dataset_info = DATASETS[dataset_key]
+    data_path = os.path.join(os.path.dirname(__file__), '..', 'datasets', 'processed', dataset_info['file'])
+    
+    try:
+        df = pd.read_csv(data_path)
+        
+        # Filter out the first events (time_since_case_start = 0) for meaningful temporal insights
+        df_filtered = df[df['time_since_case_start'] > 0].copy()
+        
+        # Get top event types for filtering (from non-zero time events)
+        top_events = df_filtered['concept:name'].value_counts().head(num_events).index.tolist()
+        
+        return df_filtered, top_events, dataset_info
+        
+    except Exception as e:
+        print(f"Error loading dataset {dataset_key}: {e}")
+        return None, None, None
 
 # Create Dash app
 app = dash.Dash(__name__, external_stylesheets=[
@@ -67,15 +114,24 @@ app.index_string = '''
             /* Tablet responsive design */
             @media (min-width: 769px) and (max-width: 1024px) {
                 .sidebar {
-                    width: 240px !important;
+                    width: 260px !important;
                 }
                 
                 .main-chart {
-                    margin-left: 260px !important;
+                    margin-left: 280px !important;
                 }
                 
                 .header-title {
                     font-size: 1.8rem !important;
+                }
+                
+                .control-card {
+                    padding: 12px !important;
+                    margin-bottom: 12px !important;
+                }
+                
+                .info-panel {
+                    padding: 12px !important;
                 }
             }
 
@@ -90,7 +146,7 @@ app.index_string = '''
                     width: 100% !important;
                     height: auto !important;
                     padding: 0 15px !important;
-                    margin-bottom: 20px !important;
+                    margin-bottom: 15px !important;
                     overflow-y: visible !important;
                 }
                 
@@ -115,26 +171,14 @@ app.index_string = '''
                 }
                 
                 .control-card {
-                    margin-bottom: 15px !important;
-                    padding: 15px !important;
+                    margin-bottom: 12px !important;
+                    padding: 12px !important;
                     border-radius: 10px !important;
                 }
                 
                 .info-panel {
-                    display: none !important;
-                }
-                
-                .toggle-buttons {
-                    flex-direction: column !important;
-                    gap: 10px !important;
-                }
-                
-                .toggle-button {
-                    width: 100% !important;
-                    border-radius: 8px !important;
-                    margin-bottom: 0 !important;
-                    padding: 12px 16px !important;
-                    font-size: 0.9rem !important;
+                    padding: 12px !important;
+                    margin-bottom: 12px !important;
                 }
                 
                 .chart-container {
@@ -172,17 +216,16 @@ app.index_string = '''
                 }
                 
                 .main-chart {
-                    padding: 5px !important;
+                    padding: 8px !important;
                 }
                 
                 .control-card {
-                    padding: 12px !important;
+                    padding: 10px !important;
                     margin-bottom: 10px !important;
                 }
                 
-                .toggle-button {
-                    padding: 10px 12px !important;
-                    font-size: 0.8rem !important;
+                .info-panel {
+                    padding: 10px !important;
                 }
                 
                 .chart-container {
@@ -207,18 +250,12 @@ app.index_string = '''
                 }
                 
                 .control-card {
-                    padding: 10px !important;
+                    padding: 8px !important;
+                    margin-bottom: 8px !important;
                 }
                 
-                .toggle-buttons {
-                    flex-direction: row !important;
-                    gap: 5px !important;
-                }
-                
-                .toggle-button {
-                    width: 50% !important;
-                    padding: 8px 12px !important;
-                    font-size: 0.8rem !important;
+                .info-panel {
+                    padding: 8px !important;
                 }
             }
         </style>
@@ -262,7 +299,7 @@ app.layout = html.Div([
             }
         ),
         html.P(
-            "Interactive visualization of temporal event distributions across multiple BPI datasets",
+            "Interactive visualization of temporal event distributions across multiple datasets",
             className="header-subtitle",
             style={
                 'textAlign': 'center',
@@ -275,7 +312,7 @@ app.layout = html.Div([
     ], style={
         'background': f'linear-gradient(135deg, {COLORS["card"]} 0%, #ecf0f1 100%)',
         'padding': '20px',
-        'marginBottom': '20px',
+        'marginBottom': '10px',
         'borderRadius': '0 0 15px 15px',
         'boxShadow': '0 2px 10px rgba(0,0,0,0.08)'
     }),
@@ -284,6 +321,43 @@ app.layout = html.Div([
     html.Div([
         # Left sidebar with controls
         html.Div([
+            # Dataset selector - moved to sidebar
+            html.Div([
+                html.Div([
+                    html.I(className="fas fa-database", style={'marginRight': '8px', 'color': COLORS['secondary']}),
+                    html.Label(
+                        "Dataset", 
+                        style={
+                            'fontWeight': '600', 
+                            'marginBottom': '10px',
+                            'color': COLORS['primary'],
+                            'fontSize': '0.9rem',
+                            'fontFamily': 'Inter, sans-serif'
+                        }
+                    )
+                ], style={'display': 'flex', 'alignItems': 'center', 'marginBottom': '10px'}),
+                
+                dcc.Dropdown(
+                    id='dataset-dropdown',
+                    options=[
+                        {'label': info['name'], 'value': key} 
+                        for key, info in DATASETS.items()
+                    ],
+                    value='traffic_fines',
+                    style={
+                        'fontFamily': 'Inter, sans-serif',
+                        'fontSize': '0.85rem'
+                    }
+                )
+            ], className="control-card", style={
+                'background': COLORS['card'],
+                'padding': '15px',
+                'borderRadius': '12px',
+                'boxShadow': '0 3px 15px rgba(0,0,0,0.08)',
+                'border': f'1px solid {COLORS["border"]}',
+                'marginBottom': '15px'
+            }),
+            
             # Time transformation toggle buttons
             html.Div([
                 html.Div([
@@ -292,13 +366,13 @@ app.layout = html.Div([
                         "Time Transformation", 
                         style={
                             'fontWeight': '600', 
-                            'marginBottom': '15px',
+                            'marginBottom': '10px',
                             'color': COLORS['primary'],
                             'fontSize': '0.9rem',
                             'fontFamily': 'Inter, sans-serif'
                         }
                     )
-                ], style={'display': 'flex', 'alignItems': 'center', 'marginBottom': '15px'}),
+                ], style={'display': 'flex', 'alignItems': 'center', 'marginBottom': '10px'}),
                 
                 # Transformation method dropdown
                 dcc.Dropdown(
@@ -312,11 +386,11 @@ app.layout = html.Div([
                 )
             ], className="control-card", style={
                 'background': COLORS['card'],
-                'padding': '20px',
+                'padding': '15px',
                 'borderRadius': '12px',
                 'boxShadow': '0 3px 15px rgba(0,0,0,0.08)',
                 'border': f'1px solid {COLORS["border"]}',
-                'marginBottom': '20px'
+                'marginBottom': '15px'
             }),
             
             # Event sorting dropdown
@@ -327,13 +401,13 @@ app.layout = html.Div([
                         "Sort Events By", 
                         style={
                             'fontWeight': '600', 
-                            'marginBottom': '15px',
+                            'marginBottom': '10px',
                             'color': COLORS['primary'],
                             'fontSize': '0.9rem',
                             'fontFamily': 'Inter, sans-serif'
                         }
                     )
-                ], style={'display': 'flex', 'alignItems': 'center', 'marginBottom': '15px'}),
+                ], style={'display': 'flex', 'alignItems': 'center', 'marginBottom': '10px'}),
                 dcc.Dropdown(
                     id='sorting-dropdown',
                     options=[
@@ -353,48 +427,82 @@ app.layout = html.Div([
                 )
             ], className="control-card", style={
                 'background': COLORS['card'],
-                'padding': '20px',
+                'padding': '15px',
                 'borderRadius': '12px',
                 'boxShadow': '0 3px 15px rgba(0,0,0,0.08)',
                 'border': f'1px solid {COLORS["border"]}',
-                'marginBottom': '20px'
+                'marginBottom': '15px'
             }),
             
-            # Info panel
+            # Number of events selector
             html.Div([
                 html.Div([
-                    html.I(className="fas fa-info-circle", style={'marginRight': '8px', 'color': COLORS['secondary']}),
+                    html.I(className="fas fa-list-ol", style={'marginRight': '8px', 'color': COLORS['secondary']}),
                     html.Label(
-                        "Dataset Info", 
+                        "Events Count", 
                         style={
                             'fontWeight': '600', 
-                            'marginBottom': '15px',
+                            'marginBottom': '10px',
                             'color': COLORS['primary'],
                             'fontSize': '0.9rem',
                             'fontFamily': 'Inter, sans-serif'
                         }
                     )
-                ], style={'display': 'flex', 'alignItems': 'center', 'marginBottom': '15px'}),
+                ], style={'display': 'flex', 'alignItems': 'center', 'marginBottom': '10px'}),
+                dcc.Dropdown(
+                    id='num-events-dropdown',
+                    options=[
+                        {'label': 'Top 4', 'value': 4},
+                        {'label': 'Top 6', 'value': 6},
+                        {'label': 'Top 8', 'value': 8},
+                        {'label': 'Top 10', 'value': 10}
+                    ],
+                    value=6,
+                    style={
+                        'fontFamily': 'Inter, sans-serif',
+                        'fontSize': '0.85rem'
+                    }
+                )
+            ], className="control-card", style={
+                'background': COLORS['card'],
+                'padding': '15px',
+                'borderRadius': '12px',
+                'boxShadow': '0 3px 15px rgba(0,0,0,0.08)',
+                'border': f'1px solid {COLORS["border"]}',
+                'marginBottom': '15px'
+            }),
+            
+            # Info panel - dynamic and compact
+            html.Div([
                 html.Div([
-                    html.P("� Traffic Fines Dataset (Active)", style={'margin': '5px 0', 'fontSize': '0.8rem', 'color': COLORS['text']}),
-                    html.P("🧹 Case-start events excluded", style={'margin': '5px 0', 'fontSize': '0.8rem', 'color': COLORS['text']}),
-                    html.P("📈 Top 4 Temporal Events", style={'margin': '5px 0', 'fontSize': '0.8rem', 'color': COLORS['text']}),
-                    html.P("🎻 Horizontal Violin + Box plots", style={'margin': '5px 0', 'fontSize': '0.8rem', 'color': COLORS['text']})
-                ])
+                    html.I(className="fas fa-info-circle", style={'marginRight': '8px', 'color': COLORS['secondary']}),
+                    html.Label(
+                        "Current Dataset", 
+                        style={
+                            'fontWeight': '600', 
+                            'marginBottom': '10px',
+                            'color': COLORS['primary'],
+                            'fontSize': '0.9rem',
+                            'fontFamily': 'Inter, sans-serif'
+                        }
+                    )
+                ], style={'display': 'flex', 'alignItems': 'center', 'marginBottom': '10px'}),
+                html.Div(id='dynamic-info-panel')
             ], className="info-panel", style={
                 'background': f'linear-gradient(135deg, #e8f4fd 0%, #f8f9fa 100%)',
-                'padding': '20px',
+                'padding': '15px',
                 'borderRadius': '12px',
                 'border': f'2px dashed {COLORS["secondary"]}',
-                'marginBottom': '20px'
+                'marginBottom': '15px'
             })
             
         ], className="sidebar", style={
-            'width': '280px',
-            'padding': '0 20px 0 20px',
+            'width': '300px',
+            'padding': '0 15px',
             'position': 'fixed',
-            'height': 'calc(100vh - 140px)',
-            'overflowY': 'auto'
+            'height': 'calc(100vh - 120px)',
+            'overflowY': 'auto',
+            'overflowX': 'hidden'
         }),
         
         # Main chart area - stretched to the right
@@ -403,22 +511,22 @@ app.layout = html.Div([
                 id='violin-plot',
                 className="chart-container",
                 style={
-                    'height': 'calc(100vh - 180px)',
+                    'height': 'calc(100vh - 160px)',
                     'background': COLORS['card'],
                     'borderRadius': '15px'
                 }
             )
         ], className="main-chart", style={
             'background': COLORS['card'],
-            'marginLeft': '320px',
+            'marginLeft': '330px',
             'marginRight': '10px',
-            'padding': '20px',
+            'padding': '15px',
             'borderRadius': '15px',
             'boxShadow': '0 4px 25px rgba(0,0,0,0.1)',
             'border': f'1px solid {COLORS["border"]}'
         })
         
-    ], className="main-content", style={'minHeight': 'calc(100vh - 100px)'})
+    ], className="main-content", style={'minHeight': 'calc(100vh - 80px)'})
     
 ], style={
     'background': COLORS['background'],
@@ -426,14 +534,67 @@ app.layout = html.Div([
     'fontFamily': 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
 })
 
-# Callback to update the violin plot based on selected transformation and sorting
+# Callback to update dataset info display in sidebar
+@app.callback(
+    Output('dynamic-info-panel', 'children'),
+    [Input('dataset-dropdown', 'value'),
+     Input('num-events-dropdown', 'value')]
+)
+def update_dataset_info(selected_dataset, num_events):
+    if selected_dataset not in DATASETS:
+        return html.P("Error", style={'color': 'red'})
+    
+    dataset_info = DATASETS[selected_dataset]
+    
+    # Compact sidebar info panel
+    sidebar_info = html.Div([
+        html.P(f"{dataset_info['name']}", style={
+            'margin': '3px 0', 
+            'fontSize': '0.8rem', 
+            'color': COLORS['text'],
+            'fontWeight': '600'
+        }),
+        html.P(f"🏢 {dataset_info['domain']}", style={
+            'margin': '3px 0', 
+            'fontSize': '0.75rem', 
+            'color': COLORS['text_light']
+        }),
+        html.P(f"📊 {dataset_info['cases']} cases", style={
+            'margin': '3px 0', 
+            'fontSize': '0.75rem', 
+            'color': COLORS['text_light']
+        }),
+        html.P("🧹 Case-start events excluded", style={
+            'margin': '3px 0', 
+            'fontSize': '0.75rem', 
+            'color': COLORS['text']
+        }),
+        html.P(f"📈 Top {num_events} event types", style={
+            'margin': '3px 0', 
+            'fontSize': '0.75rem', 
+            'color': COLORS['text']
+        })
+    ])
+    
+    return sidebar_info
+
+# Callback to update the violin plot based on selected dataset, transformation, and sorting
 @app.callback(
     Output('violin-plot', 'figure'),
-    [Input('transformation-dropdown', 'value'),
-     Input('sorting-dropdown', 'value')]
+    [Input('dataset-dropdown', 'value'),
+     Input('transformation-dropdown', 'value'),
+     Input('sorting-dropdown', 'value'),
+     Input('num-events-dropdown', 'value')]
 )
-def update_violin_plot(transformation, sorting):
-    # Use the pre-filtered data (no first events) and filter to top 4 event types
+def update_violin_plot(selected_dataset, transformation, sorting, num_events):
+    # Load the selected dataset
+    df_filtered_time, top_events, dataset_info = load_dataset(selected_dataset, num_events)
+    
+    if df_filtered_time is None:
+        # Return empty figure if dataset loading fails
+        return px.scatter(title="Error loading dataset")
+    
+    # Filter to top N event types for better visualization
     df_final = df_filtered_time[df_filtered_time['concept:name'].isin(top_events)].copy()
     
     # Apply the selected transformation using the transformations module
@@ -442,6 +603,9 @@ def update_violin_plot(transformation, sorting):
         transformation
     )
     df_final.loc[:, 'transformed_time'] = transformed_data
+    
+    # Update plot title to include dataset name
+    plot_title = f"{plot_title} - {dataset_info['name']}"
     
     # Calculate statistics for sorting
     if sorting == 'frequency':
@@ -473,6 +637,10 @@ def update_violin_plot(transformation, sorting):
         
         event_order = stats_df['concept:name'].tolist()
     
+    # Dynamic color sequence based on number of events
+    colors = ['#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6', '#f1c40f', '#e67e22', '#1abc9c', '#34495e', '#95a5a6']
+    color_sequence = colors[:num_events]
+    
     # Create violin plot with custom ordering
     fig = px.violin(
         df_final, 
@@ -482,7 +650,7 @@ def update_violin_plot(transformation, sorting):
         box=True,
         title=plot_title,
         category_orders={'concept:name': event_order},
-        color_discrete_sequence=['#3498db', '#e74c3c', '#2ecc71', '#f39c12']
+        color_discrete_sequence=color_sequence
     )
     
     fig.update_layout(
