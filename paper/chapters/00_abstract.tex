@@ -1,0 +1,22 @@
+% =====================================================================================
+% ABSTRACT
+% =====================================================================================
+
+\begin{abstract}
+
+    This paper addresses Task 10: Event type distribution over time axis. The goal is to calculate when different event types occur relative to case start and visualize these distributions using violin charts with interactive statistical sorting.
+    
+    Process mining datasets face a major problem: events occurring at time = 0 (case starts) dominate visualizations and hide meaningful patterns. We solve this by filtering out these events and focusing on the actual process timing patterns.
+    
+    We built an interactive dashboard that displays violin charts for event type distributions. Users can sort events by different statistical parameters: minimum, maximum, mean, median, and quartiles. The system supports multiple datasets and time transformations to handle different data characteristics.
+    
+    Testing across four datasets (Traffic Fines, BPI 2012, BPI 2017, Sepsis) shows the approach works across government, finance, and healthcare domains. The filtering removes 2.5-28.7 percent of uninformative events while revealing clear distribution patterns. The system handles datasets from 15,000 to over 1.2 million events with fast response times.
+    
+    Results show distinct patterns in each domain: government processes have bimodal distributions with payment peaks at 30 days and 6 months, financial processes show structured workflow stages with predictable timing, and healthcare processes demonstrate time-critical clustering within hours. The violin charts successfully reveal these patterns that traditional visualizations miss. Interactive sorting by different statistical parameters allows users to discover different insights from the same data.
+    
+    The result is a working tool that successfully implements calculating event timing, sorting by statistical parameters, and providing interactive violin chart visualization for process mining analysis.
+    
+    \end{abstract}
+    
+    \textbf{Keywords:} Process Mining, Event Distribution, Violin Charts, Statistical Sorting, Interactive Visualization
+    

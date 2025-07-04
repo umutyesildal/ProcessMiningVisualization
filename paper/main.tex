@@ -1,0 +1,62 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{cite}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{float}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{url}
+
+% Code listing style
+\lstset{
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    frame=single,
+    language=Python,
+    showstringspaces=false,
+    tabsize=2
+}
+
+% Hyperref setup
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    citecolor=red,
+}
+
+\title{Visualizing Event Type Distributions Over Time: Interactive Violin Charts for Process Mining Analysis}
+
+\author{
+    Umut Yesildal \\
+    Institut für Informatik, Humboldt-Universität zu Berlin \\
+    Supervisor: Prof. Dr. Jan Mendling \\
+    \texttt{umut.yesildal@student.hu-berlin.de}
+}
+
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+% Include individual chapter files
+\input{chapters/00_abstract}
+\input{chapters/01_introduction}
+\input{chapters/02_problem_requirements}
+\input{chapters/03_design_implementation}
+\input{chapters/04_evaluation_discussion}
+\input{chapters/05_conclusion}
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}
