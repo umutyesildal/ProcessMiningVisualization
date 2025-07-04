@@ -2,21 +2,21 @@
 % ABSTRACT
 % =====================================================================================
 
-\chapter*{Abstract}
-\addcontentsline{toc}{chapter}{Abstract}
+\begin{abstract}
 
-Process mining has emerged as a crucial discipline for understanding and optimizing business processes through event log analysis. However, traditional visualization methods often fail to effectively represent the temporal characteristics of process events, particularly when dealing with highly skewed time distributions commonly found in real-world process data. This thesis presents an innovative approach to process mining visualization through the development of an interactive dashboard that employs violin plots for temporal event analysis.
-
-The core contribution of this work is the systematic solution to the "case-start event problem" in process mining, where events occurring at the beginning of process instances (time = 0) dominate visualizations and obscure meaningful temporal patterns. Our approach introduces intelligent event filtering combined with multiple time transformation methods to reveal hidden process insights across diverse domains.
-
-We developed a comprehensive multi-dataset dashboard that supports real-time analysis across four distinct process domains: government (Traffic Fine Management with 561K events), finance (BPI Challenge 2012 and 2017 with up to 1.2M events), and healthcare (Sepsis Cases with 15K events). The system provides seven different time transformation methods, dynamic event sorting capabilities, and configurable analysis depth to accommodate various research needs.
-
-Our evaluation demonstrates the effectiveness of violin plots in revealing temporal patterns that remain hidden in traditional visualizations. The dashboard successfully handles datasets ranging from 15K to 1.2M events with consistent performance, enabling researchers to conduct cross-domain process analysis within a single interface. Key findings include the identification of bi-modal payment patterns in government processes, process bottlenecks in financial workflows, and time-critical decision patterns in healthcare.
-
-The research contributions include: (1) a methodological framework for intelligent event filtering in temporal process analysis, (2) a modular multi-dataset architecture supporting real-time cross-domain comparison, (3) empirical validation across four diverse process types demonstrating broad applicability, and (4) an open-source dashboard making advanced process mining visualization accessible to the research community.
-
-Results show that our approach reveals process insights not visible through conventional methods, with implications for process optimization in healthcare, finance, and government domains. The dashboard achieves sub-second response times for all transformations and supports seamless dataset switching, making it suitable for both research and practical applications.
-
-\textbf{Keywords:} Process Mining, Data Visualization, Violin Plots, Interactive Dashboard, Temporal Analysis, Event Logs, Cross-Domain Analysis
-
-\cleardoublepage
+    This paper addresses Task 10: Event type distribution over time axis. The goal is to calculate when different event types occur relative to case start and visualize these distributions using violin charts with interactive statistical sorting.
+    
+    Process mining datasets face a major problem: events occurring at time = 0 (case starts) dominate visualizations and hide meaningful patterns. We solve this by filtering out these events and focusing on the actual process timing patterns.
+    
+    We built an interactive dashboard that displays violin charts for event type distributions. Users can sort events by different statistical parameters: minimum, maximum, mean, median, and quartiles. The system supports multiple datasets and time transformations to handle different data characteristics.
+    
+    Testing across four datasets (Traffic Fines, BPI 2012, BPI 2017, Sepsis) shows the approach works across government, finance, and healthcare domains. The filtering removes 2.5-28.7 percent of uninformative events while revealing clear distribution patterns. The system handles datasets from 15,000 to over 1.2 million events with fast response times.
+    
+    Results show distinct patterns in each domain: government processes have bimodal distributions with payment peaks at 30 days and 6 months, financial processes show structured workflow stages with predictable timing, and healthcare processes demonstrate time-critical clustering within hours. The violin charts successfully reveal these patterns that traditional visualizations miss. Interactive sorting by different statistical parameters allows users to discover different insights from the same data.
+    
+    The result is a working tool that successfully implements calculating event timing, sorting by statistical parameters, and providing interactive violin chart visualization for process mining analysis.
+    
+    \end{abstract}
+    
+    \textbf{Keywords:} Process Mining, Event Distribution, Violin Charts, Statistical Sorting, Interactive Visualization
+    

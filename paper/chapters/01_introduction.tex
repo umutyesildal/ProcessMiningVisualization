@@ -1,0 +1,56 @@
+% =====================================================================================
+% SECTION 1: INTRODUCTION
+% =====================================================================================
+
+\section{Introduction}
+\label{sec:introduction}
+
+Process mining analyzes event logs to understand business processes \cite{aalst2016process}. Organizations use these techniques to discover how their processes actually work, find bottlenecks, and improve efficiency. A key question in process analysis is: when do different events happen during a process case?
+
+This paper addresses Event type distribution over time axis. The task requires calculating when each event type occurs relative to case start, sorting events by statistical parameters, and visualizing the results with violin charts.
+
+Recent work has emphasized that visualizing the full distribution of data, rather than relying solely on summary statistics such as means or bar graphs, is crucial for accurate interpretation and to avoid concealing important process variations \cite{weissgerber2015beyond}. Presenting process mining results in an approachable and interactive way is an ongoing research challenge, as visual analytics are essential for making complex process data accessible to non-experts \cite{rehse2023visual}.
+
+Our dashboard enables interactive grouping, sorting, and filtering of event log data, which has been shown to enhance pattern discovery and user insight in process mining visual analytics \cite{fehrer2025interactive}.
+
+\subsection{The Problem}
+\label{subsec:problem}
+
+Current process mining visualizations have a major flaw when showing event timing. Most datasets contain many events that occur at time = 0 (when cases start). These case-start events create huge spikes in charts but tell us nothing useful about process timing. They hide the real patterns we want to see.
+
+Traditional charts like histograms and box plots cannot handle this problem well. They either show meaningless spikes at time = 0 or fail to reveal the distribution shapes that matter for process analysis. Process analysts need better tools to see when events actually happen during process execution.
+
+Different process domains (healthcare, government, finance) also have very different timing characteristics. A visualization approach needs to work across these different types of processes.
+
+\subsection{Our Solution}
+\label{subsec:solution}
+
+We solve this by building an interactive dashboard with three key features:
+
+\textbf{Event Filtering:} Remove case-start events (time = 0) to focus on meaningful timing patterns.
+
+\textbf{Violin Charts:} Show both distribution shape and statistical summaries in one visualization, revealing patterns that traditional charts miss. Violin plots, which combine box plots with kernel density estimation, provide a more detailed view of data distribution, including multimodal patterns that traditional box plots may miss \cite{hintze1998violin}.
+
+\textbf{Interactive Sorting:} Let users sort events by different statistical parameters (min, max, mean, median, quartiles) to explore data from multiple perspectives.
+
+The system supports multiple datasets and time transformations to handle different process characteristics.
+
+\subsection{Contributions}
+\label{subsec:contributions}
+
+This work contributes:
+
+\begin{enumerate}
+    \item A filtering approach that removes uninformative case-start events while preserving useful timing data
+    
+    \item An interactive violin chart system that combines distribution visualization with statistical sorting
+    
+    \item Validation across four different process domains showing the approach works for government, finance, and healthcare processes
+    
+    \item A complete dashboard with seven time transformations to handle different data characteristics
+\end{enumerate}
+
+\subsection{Paper Structure}
+\label{subsec:structure}
+
+Section \ref{sec:problem} defines the specific requirements and challenges. Section \ref{sec:design} describes the system architecture and implementation. Section \ref{sec:evaluation} presents results from testing four datasets. Section \ref{sec:conclusion} summarizes findings and future work.
